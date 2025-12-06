@@ -1,15 +1,22 @@
 import asyncio
-from io import BytesIO
+import os
 
 import httpx
-from aiogram import Bot, Dispatcher, F, types
+
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from config import TELEGRAM_BOT_TOKEN, BACKEND_BASE_URL
 
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
+router = Router()
 
 
 # КНОПКА "🎓 Начать обучение"
@@ -20,8 +27,8 @@ start_keyboard = InlineKeyboardMarkup(
 )
 
 
-@dp.message(CommandStart())
-async def cmd_start(message: types.Message):
+@router.message(CommandStart())
+async def cmd_start(message: Message):
     """
     Приветствие: ТОЛЬКО ФОТО + кнопка «🎓 Начать обучение».
     Временно используем заглушку-картинку по URL.
@@ -30,19 +37,14 @@ async def cmd_start(message: types.Message):
 
     photo_url = "https://picsum.photos/800/400"  # ВРЕМЕННАЯ заглушка
 
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(photo_url)
-        resp.raise_for_status()
-        photo_bytes = resp.content
-
     await message.answer_photo(
-        photo=BytesIO(photo_bytes),
+        photo=photo_url,
         caption="",  # без текста, только фото + кнопка
         reply_markup=start_keyboard,
     )
 
 
-@dp.callback_query(F.data == "start_learning")
+@router.callback_query(F.data == "start_learning")
 async def on_start_learning(callback: CallbackQuery):
     """
     Старт обучения: простой запрос в backend /ai/chat с ролью teacher.
@@ -71,6 +73,7 @@ async def on_start_learning(callback: CallbackQuery):
 
 
 async def main():
+    dp.include_router(router)
     await dp.start_polling(bot)
 
 
