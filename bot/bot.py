@@ -18,6 +18,11 @@ bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 router = Router()
 
+WELCOME_IMAGE_URL = os.getenv(
+    "WELCOME_IMAGE_URL",
+    "https://your-domain.com/images/chatcoursefactory-welcome.png"
+)
+
 
 # КНОПКА "🎓 Начать обучение"
 start_keyboard = InlineKeyboardMarkup(
@@ -35,11 +40,16 @@ async def cmd_start(message: Message):
     Позже можно заменить на свою картинку (file_id или URL).
     """
 
-    photo_url = "https://picsum.photos/800/400"  # ВРЕМЕННАЯ заглушка
+    text = (
+        "🤖 Автономная фабрика чат-курсов и заработка в Telegram\n\n"
+        "🚀 Создавай курсы без лица\n"
+        "💬 Запускай автопродажи\n"
+        "⚡ Всё работает на автопилоте"
+    )
 
     await message.answer_photo(
-        photo=photo_url,
-        caption="",  # без текста, только фото + кнопка
+        photo=WELCOME_IMAGE_URL,
+        caption=text,
         reply_markup=start_keyboard,
     )
 
