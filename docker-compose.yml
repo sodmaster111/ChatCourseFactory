@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: ccf_backend
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+
+  bot:
+    build: ./bot
+    container_name: ccf_bot
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+
+  postgres:
+    image: postgres:16
+    container_name: ccf_postgres
+    environment:
+      POSTGRES_DB: chatcoursefactory
+      POSTGRES_USER: chatcourse
+      POSTGRES_PASSWORD: chatcourse_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: ccf_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
